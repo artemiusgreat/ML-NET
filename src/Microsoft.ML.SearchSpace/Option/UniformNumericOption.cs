@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
-using Microsoft.ML.Runtime;
 
 namespace Microsoft.ML.SearchSpace.Option
 {
@@ -21,12 +21,12 @@ namespace Microsoft.ML.SearchSpace.Option
         /// <param name="logBase">Indicate whether it should be log base or not.</param>
         public UniformNumericOption(double min, double max, bool logBase = false)
         {
-            Contracts.Check(max > min, "max must be larger than min.");
-            Contracts.Check(min > 0 || logBase == false, "min must be larger than 0 if logBase is true.");
-            this.Min = min;
-            this.Max = max;
-            this.LogBase = logBase;
-            this.Default = Enumerable.Repeat(0.0, this.FeatureSpaceDim).ToArray();
+            Contract.Assert(max > min, "max must be larger than min.");
+            Contract.Assert(min > 0 || logBase == false, "min must be larger than 0 if logBase is true.");
+            Min = min;
+            Max = max;
+            LogBase = logBase;
+            Default = Enumerable.Repeat(0.0, FeatureSpaceDim).ToArray();
         }
 
         /// <summary>
@@ -44,55 +44,47 @@ namespace Microsoft.ML.SearchSpace.Option
         /// </summary>
         public bool LogBase { get; }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override int FeatureSpaceDim => 1;
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override int?[] Step => new int?[] { null };
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override double[] MappingToFeatureSpace(Parameter param)
         {
             var x = param.AsType<double>();
-            Contracts.Check(x <= this.Max && x >= this.Min, $"{x} is not within [{this.Min}, {this.Max}]");
-            if (this.LogBase)
+            Contract.Assert(x <= Max && x >= Min, $"{x} is not within [{Min}, {Max}]");
+            if (LogBase)
             {
-                var logMax = Math.Log(this.Max);
-                var logMin = Math.Log(this.Min);
+                var logMax = Math.Log(Max);
+                var logMin = Math.Log(Min);
                 var logX = Math.Log(x);
 
                 return new[] { logX / (logMax - logMin) - logMin / (logMax - logMin) };
             }
             else
             {
-                return new[] { x / (this.Max - this.Min) - this.Min / (this.Max - this.Min) };
+                return new[] { x / (Max - Min) - Min / (Max - Min) };
             }
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override Parameter SampleFromFeatureSpace(double[] values)
         {
-            Contracts.Check(values.Length == 1, "values length must be 1");
+            Contract.Assert(values.Length == 1, "values length must be 1");
             var value = values[0];
-            Contracts.Check(value <= 1 && value >= 0, $"{value} must be between [0,1]");
+            Contract.Assert(value <= 1 && value >= 0, $"{value} must be between [0,1]");
 
-            if (this.LogBase)
+            if (LogBase)
             {
-                var order = Math.Pow(this.Max / this.Min, value);
-                var res = this.Min * order;
+                var order = Math.Pow(Max / Min, value);
+                var res = Min * order;
                 return Parameter.FromDouble(res);
             }
             else
             {
-                return Parameter.FromDouble((this.Min + (this.Max - this.Min) * value));
+                return Parameter.FromDouble((Min + (Max - Min) * value));
             }
         }
     }
@@ -114,7 +106,7 @@ namespace Microsoft.ML.SearchSpace.Option
         {
             if (defaultValue != null)
             {
-                this.Default = this.MappingToFeatureSpace(Parameter.FromDouble(defaultValue.Value));
+                Default = MappingToFeatureSpace(Parameter.FromDouble(defaultValue.Value));
             }
         }
     }
@@ -136,13 +128,11 @@ namespace Microsoft.ML.SearchSpace.Option
         {
             if (defaultValue != null)
             {
-                this.Default = this.MappingToFeatureSpace(Parameter.FromFloat(defaultValue.Value));
+                Default = MappingToFeatureSpace(Parameter.FromFloat(defaultValue.Value));
             }
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override double[] MappingToFeatureSpace(Parameter param)
         {
             var singleValue = param.AsType<float>();
@@ -150,9 +140,7 @@ namespace Microsoft.ML.SearchSpace.Option
             return base.MappingToFeatureSpace(Parameter.FromDouble(doubleValue));
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override Parameter SampleFromFeatureSpace(double[] values)
         {
             var doubleValue = base.SampleFromFeatureSpace(values).AsType<double>();
@@ -178,13 +166,11 @@ namespace Microsoft.ML.SearchSpace.Option
         {
             if (defaultValue != null)
             {
-                this.Default = this.MappingToFeatureSpace(Parameter.FromInt(defaultValue.Value));
+                Default = MappingToFeatureSpace(Parameter.FromInt(defaultValue.Value));
             }
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override Parameter SampleFromFeatureSpace(double[] values)
         {
             var param = base.SampleFromFeatureSpace(values);
@@ -193,9 +179,7 @@ namespace Microsoft.ML.SearchSpace.Option
             return Parameter.FromInt(intValue);
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public override double[] MappingToFeatureSpace(Parameter param)
         {
             var value = param.AsType<int>();

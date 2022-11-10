@@ -37,7 +37,7 @@ namespace Microsoft.ML.SearchSpace.Tests
             var array = new[] { "A", "B", "C" };
             var parameter = Parameter.FromIEnumerable(array);
 
-            var json = JsonSerializer.Serialize(parameter, this._settings);
+            var json = JsonSerializer.Serialize(parameter, _settings);
             Approvals.Verify(json);
 
             parameter = JsonSerializer.Deserialize<Parameter>(json);
@@ -106,7 +106,7 @@ namespace Microsoft.ML.SearchSpace.Tests
             var b = new B();
             b.String = null;
             var parameter = Parameter.FromObject(b);
-            var json = JsonSerializer.Serialize(parameter, this._settings);
+            var json = JsonSerializer.Serialize(parameter, _settings);
             Approvals.Verify(json);
 
             parameter = JsonSerializer.Deserialize<Parameter>(json);
@@ -116,7 +116,7 @@ namespace Microsoft.ML.SearchSpace.Tests
             parameter["Bool"].AsType<bool>().Should().BeFalse();
             parameter["Strings"].AsType<string[]>().Should().BeEquivalentTo("A", "B", "C");
             parameter["JTokenType"].AsType<JsonTokenType>().Should().Be(JsonTokenType.Null);
-            json = JsonSerializer.Serialize(parameter, this._settings);
+            json = JsonSerializer.Serialize(parameter, _settings);
             Approvals.Verify(json);
         }
 
@@ -131,6 +131,27 @@ namespace Microsoft.ML.SearchSpace.Tests
             var parameter = ss.SampleFromFeatureSpace(new[] { 0.5 });
             parameter["_SampleSize"].AsType<double>().Should().Be(15000.0);
             Thread.CurrentThread.CurrentCulture = originalCuture;
+        }
+
+        [Fact]
+        public void Parameter_equatable_test()
+        {
+            var b = new B()
+            {
+                String = "StringA",
+                Strings = new[] { "a" },
+            };
+
+            var paramB1 = Parameter.FromObject(b);
+            var paramB2 = Parameter.FromObject(b);
+
+            (paramB1.Equals(paramB2)).Should().BeTrue();
+
+            b.Bool = true;
+            paramB2 = Parameter.FromObject(b);
+
+            (paramB1.Equals(paramB2)).Should().BeFalse();
+            (paramB1.Equals(null)).Should().BeFalse();
         }
 
         private class A

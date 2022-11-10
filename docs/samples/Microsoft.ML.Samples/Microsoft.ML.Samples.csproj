@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.ML.Vision\Microsoft.ML.Vision.csproj" />
-  	<ProjectReference Include="..\..\..\src\Microsoft.ML.Featurizers\Microsoft.ML.Featurizers.csproj" />
     <ProjectReference Include="..\..\..\src\Microsoft.ML.LightGbm\Microsoft.ML.LightGbm.csproj" />
     <ProjectReference Include="..\..\..\src\Microsoft.ML.Mkl.Components\Microsoft.ML.Mkl.Components.csproj" />
     <ProjectReference Include="..\..\..\src\Microsoft.ML.KMeansClustering\Microsoft.ML.KMeansClustering.csproj" />
@@ -977,7 +976,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.Onnx.TestModels" Version="$(MicrosoftMLOnnxTestModelsVersion)" />
     <PackageReference Include="SciSharp.TensorFlow.Redist" Version="$(TensorFlowVersion)" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="$(MicrosoftMLOnnxRuntimePackageVersion)" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="$(MicrosoftMLOnnxRuntimeVersion)" />
   </ItemGroup>
 
     <ItemGroup>

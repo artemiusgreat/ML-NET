@@ -2,60 +2,52 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Microsoft.ML.AutoML
 {
-    internal static class SweepableExtension
+    public static class SweepableExtension
     {
-        public static SweepableEstimatorPipeline Append(this IEstimator<ITransformer> estimator, SweepableEstimator estimator1)
+        public static SweepablePipeline Append(this IEstimator<ITransformer> estimator, SweepableEstimator estimator1)
         {
-            return new SweepableEstimatorPipeline().Append(estimator).Append(estimator1);
+            return new SweepablePipeline().Append(estimator).Append(estimator1);
         }
 
-        public static SweepableEstimatorPipeline Append(this SweepableEstimatorPipeline pipeline, IEstimator<ITransformer> estimator1)
+        public static SweepablePipeline Append(this SweepablePipeline pipeline, IEstimator<ITransformer> estimator)
         {
-            return pipeline.Append(new SweepableEstimator((context, parameter) => estimator1, new SearchSpace.SearchSpace()));
+            return pipeline.Append(new SweepableEstimator((context, parameter) => estimator, new SearchSpace.SearchSpace()));
         }
 
-        public static SweepableEstimatorPipeline Append(this SweepableEstimator estimator, SweepableEstimator estimator1)
+        public static SweepablePipeline Append(this SweepableEstimator estimator, SweepablePipeline estimator1)
         {
-            return new SweepableEstimatorPipeline().Append(estimator).Append(estimator1);
+            return new SweepablePipeline().Append(estimator).Append(estimator1);
         }
 
-        public static SweepableEstimatorPipeline Append(this SweepableEstimator estimator, IEstimator<ITransformer> estimator1)
+        public static SweepablePipeline Append(this SweepableEstimator estimator, IEstimator<ITransformer> estimator1)
         {
-            return new SweepableEstimatorPipeline().Append(estimator).Append(estimator1);
+            return new SweepablePipeline().Append(estimator).Append(estimator1);
         }
 
-        public static MultiModelPipeline Append(this IEstimator<ITransformer> estimator, params SweepableEstimator[] estimators)
+        public static SweepablePipeline Append(this IEstimator<ITransformer> estimator, SweepablePipeline pipeline)
         {
             var sweepableEstimator = new SweepableEstimator((context, parameter) => estimator, new SearchSpace.SearchSpace());
-            var multiModelPipeline = new MultiModelPipeline().Append(sweepableEstimator).Append(estimators);
+            var res = new SweepablePipeline().Append(sweepableEstimator).Append(pipeline);
 
-            return multiModelPipeline;
+            return res;
         }
 
-        public static MultiModelPipeline Append(this SweepableEstimatorPipeline pipeline, params SweepableEstimator[] estimators)
+        public static SweepablePipeline Append(this SweepableEstimator estimator, params SweepableEstimator[] estimators)
         {
-            var multiModelPipeline = new MultiModelPipeline();
-            foreach (var estimator in pipeline.Estimators)
-            {
-                multiModelPipeline = multiModelPipeline.Append(estimator);
-            }
+            var pipeline = new SweepablePipeline();
+            pipeline = pipeline.Append(estimator);
 
-            return multiModelPipeline.Append(estimators);
+            return pipeline.Append(estimators);
         }
 
-        public static MultiModelPipeline Append(this SweepableEstimator estimator, params SweepableEstimator[] estimators)
+        public static SweepablePipeline Append(this IEstimator<ITransformer> estimator, params SweepableEstimator[] estimators)
         {
-            var multiModelPipeline = new MultiModelPipeline();
-            multiModelPipeline = multiModelPipeline.Append(estimator);
+            var sweepableEstimator = new SweepableEstimator((context, parameter) => estimator, new SearchSpace.SearchSpace());
+            var pipeline = new SweepablePipeline().Append(sweepableEstimator).Append(estimators);
 
-            return multiModelPipeline.Append(estimators);
+            return pipeline;
         }
     }
 }

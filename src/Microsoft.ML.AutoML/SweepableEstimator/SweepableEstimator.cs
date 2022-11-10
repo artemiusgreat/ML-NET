@@ -14,16 +14,16 @@ namespace Microsoft.ML.AutoML
     /// Estimator with search space.
     /// </summary>
     [JsonConverter(typeof(SweepableEstimatorConverter))]
-    internal class SweepableEstimator : Estimator
+    public class SweepableEstimator : Estimator, ISweepable<IEstimator<ITransformer>>
     {
         private readonly Func<MLContext, Parameter, IEstimator<ITransformer>> _factory;
 
         public SweepableEstimator(Func<MLContext, Parameter, IEstimator<ITransformer>> factory, SearchSpace.SearchSpace ss)
             : this()
         {
-            this._factory = factory;
-            this.SearchSpace = ss;
-            this.Parameter = ss.SampleFromFeatureSpace(ss.Default);
+            _factory = factory;
+            SearchSpace = ss;
+            Parameter = ss.SampleFromFeatureSpace(ss.Default);
         }
 
         protected SweepableEstimator()
@@ -42,7 +42,7 @@ namespace Microsoft.ML.AutoML
 
         public virtual IEstimator<ITransformer> BuildFromOption(MLContext context, Parameter param)
         {
-            return this._factory(context, param);
+            return _factory(context, param);
         }
 
         public SearchSpace.SearchSpace SearchSpace { get; set; }
@@ -70,7 +70,8 @@ namespace Microsoft.ML.AutoML
 
         public override IEstimator<ITransformer> BuildFromOption(MLContext context, Parameter param)
         {
-            return this.BuildFromOption(context, param.AsType<TOption>());
+            this.Parameter = param;
+            return BuildFromOption(context, param.AsType<TOption>());
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Microsoft.ML.SearchSpace.Tests
             option.SampleFromFeatureSpace(new[] { 0.67 }).AsType<string>().Should().Be("c");
             option.SampleFromFeatureSpace(new[] { 0.97 }).AsType<string>().Should().Be("c");
             option.SampleFromFeatureSpace(new[] { 0.999999999 }).AsType<string>().Should().Be("c");
+            option.SampleFromFeatureSpace(new[] { 1.0 }).AsType<string>().Should().Be("c");
         }
 
         [Fact]
@@ -43,6 +44,11 @@ namespace Microsoft.ML.SearchSpace.Tests
             option.MappingToFeatureSpace(Parameter.FromString("a"))[0].Should().BeApproximately(0, 1e-5);
             option.MappingToFeatureSpace(Parameter.FromString("b"))[0].Should().BeApproximately(0.333333, 1e-5);
             option.MappingToFeatureSpace(Parameter.FromString("c"))[0].Should().BeApproximately(0.666666, 1e-5);
+
+            option = new ChoiceOption("a", "b", "c", "d");
+            var parameter = option.SampleFromFeatureSpace(new[] { 0.5 });
+            parameter.AsType<string>().Should().Be("c");
+            option.MappingToFeatureSpace(parameter).Should().Equal(0.5);
         }
 
         [Fact]
@@ -53,6 +59,15 @@ namespace Microsoft.ML.SearchSpace.Tests
             option.Default.Should().BeEquivalentTo();
             option.SampleFromFeatureSpace(new double[0]).AsType<string>().Should().Be("b");
             option.MappingToFeatureSpace(Parameter.FromString("b")).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Choice_int_option_test()
+        {
+            var searchSpace = new SearchSpace();
+            searchSpace["choice"] = new ChoiceOption(1, 2, 3);
+            var parameter = searchSpace.SampleFromFeatureSpace(new[] { 0.5 });
+            parameter["choice"].AsType<int>().Should().Be(2);
         }
     }
 }

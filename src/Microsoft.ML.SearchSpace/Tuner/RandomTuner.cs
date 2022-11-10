@@ -9,26 +9,35 @@ namespace Microsoft.ML.SearchSpace.Tuner
 {
     internal sealed class RandomTuner
     {
-        private readonly SearchSpace _searchSpace;
         private readonly Random _rnd;
 
-        public RandomTuner(SearchSpace searchSpace)
+        public RandomTuner(int? seed = null)
         {
-            this._searchSpace = searchSpace;
-            this._rnd = new Random();
+            if (seed is int)
+            {
+                _rnd = new Random(seed.Value);
+            }
+            else
+            {
+                _rnd = new Random();
+            }
         }
 
-        public RandomTuner(SearchSpace searchSpace, int seed)
+        public RandomTuner(int seed)
         {
-            this._searchSpace = searchSpace;
-            this._rnd = new Random(seed);
+            _rnd = new Random(seed);
         }
 
-        public Parameter Propose()
+        public Parameter Propose(SearchSpace searchSpace)
         {
-            var d = this._searchSpace.FeatureSpaceDim;
-            var featureVec = Enumerable.Repeat(0, d).Select(i => this._rnd.NextDouble()).ToArray();
-            return this._searchSpace.SampleFromFeatureSpace(featureVec);
+            var d = searchSpace.FeatureSpaceDim;
+            var featureVec = Enumerable.Repeat(0, d).Select(i => _rnd.NextDouble()).ToArray();
+            return searchSpace.SampleFromFeatureSpace(featureVec);
+        }
+
+        public void Update(Parameter param, double metric, bool isMaximize)
+        {
+            // do nothing
         }
     }
 }

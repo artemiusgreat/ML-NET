@@ -5,10 +5,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.ML.Runtime;
 using Microsoft.ML.SearchSpace.Converter;
 
 namespace Microsoft.ML.SearchSpace
@@ -53,7 +53,7 @@ namespace Microsoft.ML.SearchSpace
     /// <see cref="Parameter"/> is used to save sweeping result from tuner and is used to restore mlnet pipeline from sweepable pipline.
     /// </summary>
     [JsonConverter(typeof(ParameterConverter))]
-    public sealed class Parameter : IDictionary<string, Parameter>
+    public sealed class Parameter : IDictionary<string, Parameter>, IEquatable<Parameter>, IEqualityComparer<Parameter>
     {
         private readonly JsonSerializerOptions _settings = new JsonSerializerOptions()
         {
@@ -65,9 +65,9 @@ namespace Microsoft.ML.SearchSpace
 
         private Parameter(object value, ParameterType type)
         {
-            this._value = value;
-            this.ParameterType = type;
-            this._settings.Converters.Add(new JsonStringEnumConverter());
+            _value = value;
+            ParameterType = type;
+            _settings.Converters.Add(new JsonStringEnumConverter());
         }
 
         /// <summary>
@@ -220,22 +220,18 @@ namespace Microsoft.ML.SearchSpace
             return parameter;
         }
 
-        internal object Value { get => this._value; }
+        internal object Value { get => _value; }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
-        public int Count => this.ParameterType == ParameterType.Object ? (this._value as Dictionary<string, Parameter>).Count : 1;
+        public int Count => ParameterType == ParameterType.Object ? (_value as Dictionary<string, Parameter>).Count : 1;
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public bool IsReadOnly
         {
             get
             {
-                this.VerifyIfParameterIsObjectType();
-                return (this._value as IDictionary<string, Parameter>)?.IsReadOnly ?? false;
+                VerifyIfParameterIsObjectType();
+                return (_value as IDictionary<string, Parameter>)?.IsReadOnly ?? false;
             }
         }
 
@@ -248,38 +244,34 @@ namespace Microsoft.ML.SearchSpace
         {
             get
             {
-                this.VerifyIfParameterIsObjectType();
-                return (this._value as IDictionary<string, Parameter>).Values;
+                VerifyIfParameterIsObjectType();
+                return (_value as IDictionary<string, Parameter>).Values;
             }
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public ICollection<string> Keys
         {
             get
             {
-                this.VerifyIfParameterIsObjectType();
-                return (this._value as IDictionary<string, Parameter>).Keys;
+                VerifyIfParameterIsObjectType();
+                return (_value as IDictionary<string, Parameter>).Keys;
             }
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public Parameter this[string key]
         {
             get
             {
-                this.VerifyIfParameterIsObjectType();
-                return (this._value as IDictionary<string, Parameter>)[key];
+                VerifyIfParameterIsObjectType();
+                return (_value as IDictionary<string, Parameter>)[key];
             }
 
             set
             {
-                this.VerifyIfParameterIsObjectType();
-                (this._value as IDictionary<string, Parameter>)[key] = value;
+                VerifyIfParameterIsObjectType();
+                (_value as IDictionary<string, Parameter>)[key] = value;
             }
         }
 
@@ -289,119 +281,142 @@ namespace Microsoft.ML.SearchSpace
         /// </summary>
         public T AsType<T>()
         {
-            if (this._value is T t)
+            if (_value is T t)
             {
                 return t;
             }
             else
             {
-                var json = JsonSerializer.Serialize(this._value, this._settings);
-                return JsonSerializer.Deserialize<T>(json, this._settings);
+                var json = JsonSerializer.Serialize(_value, _settings);
+                return JsonSerializer.Deserialize<T>(json, _settings);
             }
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public void Clear()
         {
-            this.VerifyIfParameterIsObjectType();
-            (this._value as Dictionary<string, Parameter>).Clear();
+            VerifyIfParameterIsObjectType();
+            (_value as Dictionary<string, Parameter>).Clear();
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public void Add(string key, Parameter value)
         {
-            this.VerifyIfParameterIsObjectType();
-            (this._value as Dictionary<string, Parameter>).Add(key, value);
+            VerifyIfParameterIsObjectType();
+            (_value as Dictionary<string, Parameter>).Add(key, value);
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public bool TryGetValue(string key, out Parameter value)
         {
-            this.VerifyIfParameterIsObjectType();
-            return (this._value as Dictionary<string, Parameter>).TryGetValue(key, out value);
+            VerifyIfParameterIsObjectType();
+            return (_value as Dictionary<string, Parameter>).TryGetValue(key, out value);
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public void Add(KeyValuePair<string, Parameter> item)
         {
-            this.VerifyIfParameterIsObjectType();
-            (this._value as Dictionary<string, Parameter>).Add(item.Key, item.Value);
+            VerifyIfParameterIsObjectType();
+            (_value as Dictionary<string, Parameter>).Add(item.Key, item.Value);
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public bool Contains(KeyValuePair<string, Parameter> item)
         {
-            this.VerifyIfParameterIsObjectType();
-            return (this._value as Dictionary<string, Parameter>).Contains(item);
+            VerifyIfParameterIsObjectType();
+            return (_value as Dictionary<string, Parameter>).Contains(item);
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public bool Remove(KeyValuePair<string, Parameter> item)
         {
-            this.VerifyIfParameterIsObjectType();
-            return (this._value as IDictionary<string, Parameter>).Remove(item);
+            VerifyIfParameterIsObjectType();
+            return (_value as IDictionary<string, Parameter>).Remove(item);
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         IEnumerator<KeyValuePair<string, Parameter>> IEnumerable<KeyValuePair<string, Parameter>>.GetEnumerator()
         {
-            this.VerifyIfParameterIsObjectType();
-            return (this._value as IDictionary<string, Parameter>).GetEnumerator();
+            VerifyIfParameterIsObjectType();
+            return (_value as IDictionary<string, Parameter>).GetEnumerator();
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            this.VerifyIfParameterIsObjectType();
-            return (this._value as IDictionary<string, Parameter>).GetEnumerator();
+            VerifyIfParameterIsObjectType();
+            return (_value as IDictionary<string, Parameter>).GetEnumerator();
         }
 
         private void VerifyIfParameterIsObjectType()
         {
-            Contracts.Check(this.ParameterType == ParameterType.Object, "parameter is not object type.");
+            Contract.Assert(ParameterType == ParameterType.Object, "parameter is not object type.");
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public void CopyTo(KeyValuePair<string, Parameter>[] array, int arrayIndex)
         {
-            this.VerifyIfParameterIsObjectType();
-            (this._value as IDictionary<string, Parameter>).CopyTo(array, arrayIndex);
+            VerifyIfParameterIsObjectType();
+            (_value as IDictionary<string, Parameter>).CopyTo(array, arrayIndex);
         }
 
-        /// <summary>
         /// <inheritdoc/>
-        /// </summary>
         public bool ContainsKey(string key)
         {
-            this.VerifyIfParameterIsObjectType();
-            return (this._value as IDictionary<string, Parameter>).ContainsKey(key);
+            VerifyIfParameterIsObjectType();
+            return (_value as IDictionary<string, Parameter>).ContainsKey(key);
+        }
+
+        /// <inheritdoc/>
+        public bool Remove(string key)
+        {
+            VerifyIfParameterIsObjectType();
+            return (_value as IDictionary<string, Parameter>).Remove(key);
+        }
+
+        /// <inheritdoc/>
+        public bool Equals(Parameter other)
+        {
+            //Check whether the compared object is null.
+            if (Object.ReferenceEquals(other, null)) return false;
+
+            //Check whether the compared object references the same data.
+            if (Object.ReferenceEquals(this, other)) return true;
+
+            var thisJson = JsonSerializer.Serialize(this);
+            var otherJson = JsonSerializer.Serialize(other);
+
+            return thisJson == otherJson;
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var thisJson = JsonSerializer.Serialize(this);
+            return thisJson.GetHashCode();
         }
 
         /// <summary>
-        /// <inheritdoc/>
+        /// Determines wether two <see cref="Parameter"/> objects have the same value.
         /// </summary>
-        public bool Remove(string key)
+        /// <param name="x">The first parameter to compare.</param>
+        /// <param name="y">The second parameter to compare.</param>
+        /// <returns>true if the value of <paramref name="x" /> is the same as the value of <paramref name="y" />; otherwise, false.</returns>
+        public bool Equals(Parameter x, Parameter y)
         {
-            this.VerifyIfParameterIsObjectType();
-            return (this._value as IDictionary<string, Parameter>).Remove(key);
+            return x.GetHashCode() == y.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public int GetHashCode(Parameter obj)
+        {
+            return obj.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
         }
     }
 }
